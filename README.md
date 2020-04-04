@@ -1,6 +1,13 @@
 # bipbop-microservices
 Serviços pequenos e de baixo consumo de memória escritos em JavaScript.
 
+## Instalação
+
+```bash
+npm install -g bipbop-microservice
+bipbop-microservice
+```
+
 ## Comunicação
 
 Comunicação toda realizada em JSON.
