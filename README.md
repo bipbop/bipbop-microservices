@@ -1,5 +1,5 @@
 # bipbop-microservices
-Serviços pequenos e de baixo consumo de memória escritos em JavaScript.
+Serviços pequenos e de baixo consumo de memória escritos em JavaScript instalados em rede segura.
 
 ## Instalação
 
