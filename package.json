@@ -1,6 +1,6 @@
 {
   "name": "bipbop-microservices",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Utilização dos serviços da BIPBOP em JS",
   "main": "dist/index.js",
   "scripts": {
@@ -27,8 +27,7 @@
     "entidades-partes": "^0.1.1",
     "jsonschema": "^1.2.6",
     "jspack": "0.0.4",
-    "metaphone-ptbr": "^1.0.14",
-    "qunpack": "^0.5.2"
+    "metaphone-ptbr": "^1.0.14"
   },
   "devDependencies": {
     "@types/node": "^13.11.0",
