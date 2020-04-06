@@ -13,7 +13,7 @@ bipbop-microservice
 Comunicação toda realizada em JSON.
 
 ```
-uint]   <=  4 Bytes do tamanho do PAYLOAD
+uint    <=  4 Bytes do tamanho do PAYLOAD
 char[]  <=  PAYLOAD JSON
 uint    =>  4 Bytes do tamanho do RESPONSE
 char[]  =>  RESPONSE JSON
