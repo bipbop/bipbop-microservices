@@ -48,7 +48,7 @@ class Client
         ?string $hostname = null,
         ?int $port = null,
         ?string $proto = null,
-        ?int $timeout = null
+        ?array $timeout = null
     ) {
         $this->proto = $proto ?: (getenv('BIPBOP_MS_PROTO') ?? 'udp');
         $this->hostname = $hostname ?: (getenv('BIPBOP_MS_HOST') ?? 'localhost');
