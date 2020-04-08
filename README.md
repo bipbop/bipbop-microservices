@@ -1,4 +1,4 @@
-# bipbop-microservices
+# ![BIPBOP](https://bipbop.com.br/static/images/favicon.png) bipbop-microservices
 Serviços pequenos e de baixo consumo de memória com pequenos PAYLOADS escritos em JavaScript instalados em rede segura.
 
 ## Instalação
