@@ -10,11 +10,12 @@ export declare enum ApplicationState {
     Disconnecting = 4,
     Disconnected = 5
 }
+declare type HookError = (client: net.Socket, e: Error) => any;
 export interface Configuration {
     timeout: number;
     services: Services;
     maxPayloadSize: number;
-    hookError: (client: net.Socket, e: Error) => any;
+    hookError: HookError;
 }
 export interface ClientConfiguration extends Configuration {
     server: net.Server;
@@ -44,3 +45,4 @@ export declare class Client {
     protected clientSendingJSON(buffer: Buffer): Promise<void>;
     protected receiveData(data: Buffer): void;
 }
+export {};

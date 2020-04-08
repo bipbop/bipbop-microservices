@@ -7,12 +7,23 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Launch Program",
-      "args": ["${workspaceRoot}/bin/index.js"],
+      "name": "TCP Server",
+      "args": ["${workspaceRoot}/bin/tcp.js"],
+      "cwd": "${workspaceRoot}",
+      "protocol": "inspector",
+      "internalConsoleOptions": "openOnSessionStart",
+      "env": {},
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "UDP Server",
+      "args": ["${workspaceRoot}/bin/udp.js"],
       "cwd": "${workspaceRoot}",
       "protocol": "inspector",
       "internalConsoleOptions": "openOnSessionStart",
       "env": {},
     }
+
   ]
 }

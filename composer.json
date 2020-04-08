@@ -1,0 +1,20 @@
+{
+    "name": "bipbop/microservices",
+    "description": "Comunicação com Microserviços BIPBOP",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Lucas Fernando Amorim",
+            "email": "lf.amorim@bipbop.com.br"
+        }
+    ],
+    "version" : "2.1.2",
+    "minimum-stability": "stable",
+    "require": {},
+    "autoload" : {
+        "psr-4" : {
+            "BIPBOP\\" : "src/php"
+        }
+    }
+}

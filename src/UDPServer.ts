@@ -4,29 +4,53 @@ import { Services } from './Services';
 import { ReceiveFormat, receiveSchema } from './ReceiveSchema';
 import { validate } from 'jsonschema';
 import { SendFormat } from './SendFormat';
+import { ResponseError } from './ResponseError';
+import { jspack } from 'jspack';
 
-export function udpServer(services: Services, udpSocket: udp.Socket) {
+type HookError = (client: udp.RemoteInfo, e: Error) => any;
+
+export function udpServer(services: Services, udpSocket: udp.Socket, hookError?: HookError) {
     const schema = receiveSchema(services);
     udpSocket.on('message', async (msg, clientInformation) => {
 
+        const payload = msg.slice(4);
+
         const respond = (response: SendFormat) => {
-            const responseString = JSON.stringify(response);
-            udpSocket.send(
-                Buffer.concat([checksum, Buffer.from(crc32(responseString).toString(16)), Buffer.from(responseString)]),
-                clientInformation.port, clientInformation.address);
+            const responseString = Buffer.from(JSON.stringify(response));
+            const responseBuffer = Buffer.concat([
+                Buffer.from(jspack.Pack("<I", [responseString.length])) /* crc32 request */,
+                responseString /* response */
+            ]);
+            udpSocket.send(responseBuffer, clientInformation.port, clientInformation.address, (error, bytes) => {
+                if (!hookError) return;
+                if (error) hookError(clientInformation, error);
+                if (bytes !== responseBuffer.length) {
+                    hookError(clientInformation, new Error(`wrong byte size, expected ${responseBuffer.length}, writed ${bytes}`));
+                }
+            });
         }
 
-        const payload = msg.slice(16);
-        const checksum = msg.slice(0, 16);
-        const checksumConfirm = crc32(payload).toString(16);
-        if (checksum.toString('ascii') !== checksumConfirm) return;
+        const respondError = (e: Array<ResponseError | Error> | ResponseError | Error) => {
+            const useError = Array.isArray(e) ? e.map(e => ResponseError.from(e)) : [ResponseError.from(e)];
+            if (hookError) useError.forEach(e => hookError(clientInformation, e))
+            respond({ errors: useError, payload: null });
+        }
+
         const content = JSON.parse(payload.toString('utf-8')) as ReceiveFormat;
         const contentValidation = validate(content, schema);
-        if (!contentValidation.valid) return;
-        const response = await Promise.resolve(services[content.service].call(content));
-        const responseValidation = validate(response, schema);
+        if (!contentValidation.valid) {
+            respondError(contentValidation.errors);
+            return;
+        }
 
-        if (!responseValidation.valid) return;
-        respond({payload: response});
+        const response = await Promise.resolve(services[content.service].call(content.payload));
+        const responseValidation = validate(response, services[content.service].response);
+
+        if (!responseValidation.valid) {
+            respondError(responseValidation.errors);
+            return;
+        }
+
+        respond({ payload: response });
     });
 }

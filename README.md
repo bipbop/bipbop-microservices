@@ -1,5 +1,5 @@
 # bipbop-microservices
-Serviços pequenos e de baixo consumo de memória escritos em JavaScript instalados em rede segura.
+Serviços pequenos e de baixo consumo de memória com pequenos PAYLOADS escritos em JavaScript instalados em rede segura.
 
 ## Instalação
 
@@ -12,12 +12,24 @@ bipbop-microservice
 
 Comunicação toda realizada em JSON.
 
+### TCP/UDP
+
 ```
-uint]   <=  4 Bytes do tamanho do PAYLOAD
+uint    <=  4 Bytes do tamanho do PAYLOAD
 char[]  <=  PAYLOAD JSON
 uint    =>  4 Bytes do tamanho do RESPONSE
 char[]  =>  RESPONSE JSON
 ```
+
+## Variáveis de Ambiente
+
+```sh
+BIPBOP_MS_PORT=3000
+BIPBOP_MS_MAX_CONNECTIONS=500
+BIPBOP_MS_MAX_PAYLOAD_SIZE=100000 #bytes
+BIPBOP_MS_TIMEOUT=3000 #ms
+```
+
 
 ### Lista Microserviços
 

@@ -1,13 +1,15 @@
 {
   "name": "bipbop-microservices",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "Utilização dos serviços da BIPBOP em JS",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc"
   },
   "bin": {
-    "bipbop-microservice": "./bin/index.js"
+    "bipbop-microservice": "./bin/tcp.js",
+    "bipbop-microservice-tcp": "./bin/tcp.js",
+    "bipbop-microservice-udp": "./bin/udp.js"
   },
   "repository": {
     "type": "git",
@@ -18,7 +20,7 @@
     "bipbop"
   ],
   "author": "lf.amorim@bipbop.com.br",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/bipbop/bipbop-microservices/issues"
   },
@@ -28,8 +30,7 @@
     "entidades-partes": "^0.1.1",
     "jsonschema": "^1.2.6",
     "jspack": "0.0.4",
-    "metaphone-ptbr": "^1.0.14",
-    "qunpack": "^0.5.2"
+    "metaphone-ptbr": "^1.0.14"
   },
   "devDependencies": {
     "@types/crc": "^3.4.0",

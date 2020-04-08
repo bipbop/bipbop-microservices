@@ -6,6 +6,6 @@ var ResponseErrorCodes;
     ResponseErrorCodes[ResponseErrorCodes["WrongParameters"] = 2] = "WrongParameters";
     ResponseErrorCodes[ResponseErrorCodes["ServerError"] = 3] = "ServerError";
     ResponseErrorCodes[ResponseErrorCodes["UnknownError"] = 4] = "UnknownError";
+    ResponseErrorCodes[ResponseErrorCodes["InvalidChecksum"] = 5] = "InvalidChecksum";
 })(ResponseErrorCodes = exports.ResponseErrorCodes || (exports.ResponseErrorCodes = {}));
-;
 //# sourceMappingURL=ResponseErrorCodes.js.map

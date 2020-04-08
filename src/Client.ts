@@ -16,11 +16,13 @@ export enum ApplicationState {
     Disconnected
 }
 
+type HookError = (client: net.Socket, e: Error) => any;
+
 export interface Configuration {
     timeout: number;
     services: Services;
     maxPayloadSize: number;
-    hookError: (client: net.Socket, e: Error) => any;
+    hookError: HookError;
 }
 
 export interface ClientConfiguration extends Configuration {
@@ -119,7 +121,7 @@ export class Client {
 
         if (clientResponse) {
             await this.writeClient({
-                error: userError.map(e => ResponseError.from(e)),
+                errors: userError.map(e => ResponseError.from(e)),
                 payload: null
             });
         } else {

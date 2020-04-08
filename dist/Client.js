@@ -158,7 +158,7 @@ var Client = /** @class */ (function () {
                         userError.map(function (e) { return _this.configuration.hookError(_this.client, e); });
                         if (!clientResponse) return [3 /*break*/, 4];
                         return [4 /*yield*/, this.writeClient({
-                                error: userError.map(function (e) { return ResponseError_1.ResponseError.from(e); }),
+                                errors: userError.map(function (e) { return ResponseError_1.ResponseError.from(e); }),
                                 payload: null
                             })];
                     case 3:

@@ -1,5 +1,5 @@
 import { ResponseError } from './ResponseError';
 export declare type SendFormat<P = any> = {
-    error?: Array<ResponseError>;
+    errors?: Array<ResponseError>;
     payload: P;
 };
