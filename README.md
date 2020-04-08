@@ -50,25 +50,6 @@ createServer({
   timeout: 3000,
   maxPayloadSize: 512000,
   services: {
-    entidades: {
-      call: (payload) => {
-        return distance(payload);
-      },
-      request: { type: 'string' },
-      response: {
-        type: 'object',
-        required: [
-          "polo",
-          "parte",
-          "distance"
-        ],
-        properties: {
-          polo: { type: 'string' },
-          parte: { type: 'string' },
-          distance: { type: 'number' }
-        }
-      }
-    },
     mirror: {
       call: (payload) => {
         return payload;
@@ -76,16 +57,30 @@ createServer({
       request: { type: 'string' },
       response: { type: 'string' }
     },
-    metaphone: {
-      call: (payload) => {
-        return metaphone(payload);
-      },
-      request: { type: 'string' },
-      response: { type: 'string' }
-    }
   }
 });
 
 server.maxConnections = 10;
 server.listen(serverPort);
+```
+
+### Clientes 
+
+### PHP
+
+Existe uma biblioteca PHP para conexão com os microserviços.
+
+```sh
+composer require bipbop/microservices
+```
+
+```php
+use BIPBOP;
+
+$client = new Microservices\Client(
+  "localhost",
+  3000,
+  Microservices\Client::PROTO_UDP,
+  ['sec' => 3, 'usec' => 0]);
+var_dump($client->call("mirror", "content"));
 ```

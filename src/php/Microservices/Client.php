@@ -5,7 +5,7 @@ namespace BIPBOP\Microservices;
 /**
  * Classe do Microserviço
  */
-class Microservice
+class Client
 {
     const PROTO_UDP = 'udp';
     const PROTO_TCP = 'tcp';
