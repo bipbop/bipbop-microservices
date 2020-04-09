@@ -23,7 +23,7 @@ char[]  =>  RESPONSE JSON
 
 ## Variáveis de Ambiente
 
-```sh
+```ini
 BIPBOP_MS_PORT=3000
 BIPBOP_MS_MAX_CONNECTIONS=500
 BIPBOP_MS_MAX_PAYLOAD_SIZE=100000 #bytes
