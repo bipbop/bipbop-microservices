@@ -3,7 +3,7 @@ import { crc32 } from 'crc';
 import { Services } from './Services';
 import { ReceiveFormat, receiveSchema } from './ReceiveSchema';
 import { validate } from 'jsonschema';
-import { SendFormat } from './SendFormat';
+import { SendFormat, ResponseErrors } from './SendFormat';
 import { ResponseError } from './ResponseError';
 import { jspack } from 'jspack';
 
@@ -31,9 +31,10 @@ export function udpServer(services: Services, udpSocket: udp.Socket, hookError?:
         }
 
         const respondError = (e: Array<ResponseError | Error> | ResponseError | Error) => {
+            if (Array.isArray(e) && !e.length) throw new TypeError('at least one error is needed')
             const useError = Array.isArray(e) ? e.map(e => ResponseError.from(e)) : [ResponseError.from(e)];
             if (hookError) useError.forEach(e => hookError(clientInformation, e))
-            respond({ errors: useError, payload: null });
+            respond({ errors: useError as ResponseErrors, payload: null });
         }
 
         const content = JSON.parse(payload.toString('utf-8')) as ReceiveFormat;

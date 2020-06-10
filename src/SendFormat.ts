@@ -1,6 +1,10 @@
 import { ResponseError } from './ResponseError';
 
+export interface ResponseErrors extends Array<ResponseError> { 0: ResponseError }
+
 export type SendFormat<P = any> = {
-    errors?: Array<ResponseError>;
-    payload: P;
-};
+    errors: ResponseErrors
+    payload: P | null
+} | {
+    payload: P
+}

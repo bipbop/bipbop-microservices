@@ -2,7 +2,7 @@ import net from 'net';
 
 import { jspack } from 'jspack';
 import { validate } from 'jsonschema';
-import { SendFormat } from './SendFormat';
+import { SendFormat, ResponseErrors } from './SendFormat';
 import { ReceiveFormat, receiveSchema } from './ReceiveSchema';
 import { ResponseError } from './ResponseError';
 import { Services } from './Services';
@@ -119,9 +119,9 @@ export class Client {
 
         userError.map(e => this.configuration.hookError(this.client, e));
 
-        if (clientResponse) {
+        if (clientResponse && userError.length) {
             await this.writeClient({
-                errors: userError.map(e => ResponseError.from(e)),
+                errors: userError.map(e => ResponseError.from(e)) as ResponseErrors,
                 payload: null
             });
         } else {

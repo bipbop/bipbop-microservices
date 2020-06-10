@@ -66,6 +66,8 @@ function udpServer(services, udpSocket, hookError) {
                         });
                     };
                     respondError = function (e) {
+                        if (Array.isArray(e) && !e.length)
+                            throw new TypeError('at least one error is needed');
                         var useError = Array.isArray(e) ? e.map(function (e) { return ResponseError_1.ResponseError.from(e); }) : [ResponseError_1.ResponseError.from(e)];
                         if (hookError)
                             useError.forEach(function (e) { return hookError(clientInformation, e); });

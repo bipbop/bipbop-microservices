@@ -156,7 +156,7 @@ var Client = /** @class */ (function () {
                     case 2:
                         userError = Array.isArray(error) ? error : [error];
                         userError.map(function (e) { return _this.configuration.hookError(_this.client, e); });
-                        if (!clientResponse) return [3 /*break*/, 4];
+                        if (!(clientResponse && userError.length)) return [3 /*break*/, 4];
                         return [4 /*yield*/, this.writeClient({
                                 errors: userError.map(function (e) { return ResponseError_1.ResponseError.from(e); }),
                                 payload: null
