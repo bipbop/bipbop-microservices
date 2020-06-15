@@ -129,6 +129,7 @@ class Client
         }
 
         socket_set_option($this->socket, SOL_SOCKET, SO_RCVTIMEO, $this->timeout);
+        socket_set_option($this->socket, SOL_SOCKET, SO_SNDTIMEO, $this->timeout);
 
         if (!@socket_connect($this->socket, $this->hostname, $this->port)) {
             $this->disconnect();

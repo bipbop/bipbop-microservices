@@ -22,10 +22,12 @@ def register_service(service: str, service_function: Callable[[Any], Any], input
 register_service('mirror', lambda payload: payload, {type: 'string'}, {'type': 'string'})
 
 class ThreadedUDPServer(socketserver.ThreadingMixIn, socketserver.UDPServer):
-  daemon_threads = False
+  daemon_threads = True
   allow_reuse_address = True
 
 class ServiceHandler(socketserver.DatagramRequestHandler):
+  request_queue_size = 1000
+  timeout = 1
 
   def handle_error(self, e):
     message = str(getattr(e, 'message') if hasattr(e, 'message') else "{}: an error has ocurred".  format(type(e).__name__))
