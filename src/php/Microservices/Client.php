@@ -10,6 +10,19 @@ class Client
     const PROTO_UDP = 'udp';
     const PROTO_TCP = 'tcp';
 
+    private static $socketErrorConstants;
+
+    protected static function socket_error($code)
+    {
+        if ($code === 0) {
+            return null;
+        }
+        if (!self::$socketErrorConstants) {
+            self::$socketErrorConstants = get_defined_constants(true)['sockets'];
+        }
+        return array_search($code, self::$socketErrorConstants, true);
+    }
+
     protected $socket;
     protected $proto;
     protected $hostname;
@@ -56,17 +69,63 @@ class Client
         $this->timeout = $timeout ?: ['sec' => 0, 'usec' => ((int)getenv('BIPBOP_MS_TIMEOUT') ?? 3000) ];
     }
 
-    protected function throwError($v = null)
+    protected function socketError(&$socketErrorCode)
     {
+        $socketErrorCode = socket_last_error($this->socket);
+        return self::socket_error($socketErrorCode);
+    }
+
+    protected function timeoutAt()
+    {
+        $time = microtime(true);
+        $sec = $this->timeout['sec'] ?? 3;
+        $usec = ($this->timeout['usec'] ?? 0) / 1000.;
+        return $time + $sec + $usec;
+    }
+
+    protected function throwOnError($v = null, $defaultMessage = 'a fatal error occurred in microservice', $defaultCode = 0)
+    {
+        $socketErrorCode = null;
+        $socketError = $this->socketError($socketErrorCode);
+
         if ($v !== false) {
             return $v;
         }
-        $error = error_get_last();
-        if (!$error) {
-            return;
+
+        switch ($socketError) {
+            /* async */
+            case 'SOCKET_EWOULDBLOCK':
+            case 'SOCKET_EAGAIN':
+            case 'SOCKET_EALREADY':
+            case 'SOCKET_EINPROGRESS':
+            case 'SOCKET_EISCONN':
+            case null:
+                break;
+            default:
+                throw new Exception("socket error ${socketError} - ${$socketErrorCode}");
         }
-        $this->disconnect();
-        throw new Exception($error['message']);
+
+        $error = error_get_last();
+        if ($error) {
+            $this->disconnect();
+            throw new Exception($error['message']);
+        }
+
+        return $v;
+    }
+
+    protected function socketRead($socket, $size)
+    {
+        $timeout = $this->timeoutAt();
+        $content = false;
+        while ($content === false) {
+            $content = $this->throwOnError(@socket_read($socket, $size));
+            if ($content !== false) break;
+            if ($timeout < microtime(true)) throw new Exception('timeout occurred');
+            usleep(100);
+        }
+
+        return $content;
     }
 
     /**
@@ -81,24 +140,23 @@ class Client
 
         $encode = json_encode(['service' => $service, 'payload' => $payload]);
         
-        $this->throwError(@socket_write($socket, pack('I', strlen($encode)) . $encode));
-    
-        $data = $this->throwError(@socket_read($socket, 65507));
-        $bytes = unpack("I", substr($data, 0, 4));
-        $int = array_pop($bytes);
-    
-        $content = substr($data, 4);
+        $this->throwOnError(@socket_write($socket, pack('I', strlen($encode)) . $encode));
+        $data = $this->socketRead($socket, 65535);
+        $bytesUnpack = unpack("I", substr($data, 0, 4));
+        $bytes = array_pop($bytesUnpack);
+        $bytesPending = $bytes - strlen($data) - 4;
 
-        if ($this->proto !== self::PROTO_UDP) {
-            while ($int > strlen($content)) {
-                $content .= $this->throwError(socket_read($socket, $int - strlen($content)));
-            }
+        while ($bytesPending > 0) {
+            $piece = $this->socketRead($socket, $bytesPending);
+            $bytesPending -= strlen($piece);
+            $data .= $piece;
         }
 
+        $content = substr($data, 4);
         $contentSize = strlen($content);
-        if ($contentSize !== $int) {
+        if ($contentSize !== $bytes) {
             $this->disconnect();
-            throw new Exception(sprintf("Expecting a different amount of bytes, expected %d, received %d", $int, $contentSize));
+            throw new Exception(sprintf("Expecting a different amount of bytes, expected %d, received %d", $bytes, $contentSize));
         }
 
         $decode = json_decode($content, true);
@@ -131,12 +189,24 @@ class Client
         socket_set_option($this->socket, SOL_SOCKET, SO_RCVTIMEO, $this->timeout);
         socket_set_option($this->socket, SOL_SOCKET, SO_SNDTIMEO, $this->timeout);
 
-        if (!@socket_connect($this->socket, $this->hostname, $this->port)) {
-            $this->disconnect();
-            $this->throwError();
-            return;
-        }
 
+        socket_set_nonblock($this->socket);
+
+        $timeout = $this->timeoutAt();
+        while (!@socket_connect($this->socket, $this->hostname, $this->port)) {
+            if (in_array($this->socketError(), ['SOCKET_EISCONN'])) {
+                break;
+            }
+            try {
+                $this->throwOnError();
+                if ($timeout < microtime(true)) {
+                    throw new Exception('timeout ocurred');
+                }
+            } catch (\Exception $e) {
+                $this->disconnect();
+                throw $e;
+            }
+        }
 
         return $this->socket;
     }

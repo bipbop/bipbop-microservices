@@ -3,12 +3,14 @@
   // Hover to view descriptions of existing attributes.
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
-  "configurations": [  
+  "configurations": [
     {
       "type": "node",
       "request": "launch",
       "name": "TCP Server",
-      "args": ["${workspaceRoot}/bin/tcp.js"],
+      "args": [
+        "${workspaceRoot}/bin/tcp.js"
+      ],
       "cwd": "${workspaceRoot}",
       "protocol": "inspector",
       "internalConsoleOptions": "openOnSessionStart",
@@ -18,12 +20,23 @@
       "type": "node",
       "request": "launch",
       "name": "UDP Server",
-      "args": ["${workspaceRoot}/bin/udp.js"],
+      "args": [
+        "${workspaceRoot}/bin/udp.js"
+      ],
       "cwd": "${workspaceRoot}",
       "protocol": "inspector",
       "internalConsoleOptions": "openOnSessionStart",
       "env": {},
+    },
+    {
+      "name": "PHP Microservice Debug",
+      "type": "php",
+      "request": "launch",
+      "runtimeExecutable": "/opt/php-bipbop-7.3/bin/php",
+      "stopOnEntry": true,
+      "cwd": "${workspaceFolder}/src/php",
+      "program": "${workspaceFolder}/src/php/debug.php",
+      "port": 9000
     }
-
   ]
 }
