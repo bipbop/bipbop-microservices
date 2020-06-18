@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="bipbop-microservices",
-    version="0.0.4",
+    version="0.0.5",
     author="Lucas Fernando Amorim",
     author_email="lf.amorim@bipbop.com.br",
     description="IPC between BIPBOP APPs",
