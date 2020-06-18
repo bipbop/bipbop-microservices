@@ -87,7 +87,7 @@ class GenericBaseHandler:
     def _internal_handle(self) -> str:
         request_object = self._get_request()
         if request_object is None:
-            return
+            return False
 
         payload = request_object['payload']
         service = request_object['service']
@@ -100,12 +100,13 @@ class GenericBaseHandler:
         validate(payload, input_schema)
         response_content = service(payload)
         validate(response_content, output_schema)
-        return json.dumps({'payload': response_content})
+
+        self._write_response(json.dumps({'payload': response_content}))
+        return True
 
     def handle(self):
         try:
-            response = self._internal_handle()
-            self._write_response(response)
+            return self._internal_handle()
         except EOFError:
             pass
         except BrokenPipeError:
@@ -117,8 +118,8 @@ class GenericBaseHandler:
 class TCPServiceHandler(GenericBaseHandler, socketserver.BaseRequestHandler):
 
     def handle(self):
-        while True:
-            super().handle()
+        while super().handle():
+            pass
 
     def _read_payload(self, request_len: int) -> str:
         data = self.request.recv(request_len)
