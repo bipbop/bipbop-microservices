@@ -225,7 +225,7 @@ class Client
             try {
                 $this->throwOnError();
                 if ($timeout < microtime(true)) {
-                    throw new Exception('timeout ocurred');
+                    throw new Exception('timeout occurred');
                 }
             } catch (\Exception $e) {
                 $this->disconnect();
