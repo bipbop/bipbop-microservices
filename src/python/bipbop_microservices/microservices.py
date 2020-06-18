@@ -73,8 +73,10 @@ class GenericBaseHandler:
             'payload': None
         }))
 
-    def _get_request(self) -> str:
+    def _get_request(self) -> Union[str, None]:
         request_len = self._payload_len()
+        if not request_len:
+            return None
         request = self._read_payload(request_len)
 
         if request_len < len(request):
@@ -84,6 +86,8 @@ class GenericBaseHandler:
 
     def _internal_handle(self) -> str:
         request_object = self._get_request()
+        if request_object is None:
+            return
 
         payload = request_object['payload']
         service = request_object['service']
@@ -102,6 +106,10 @@ class GenericBaseHandler:
         try:
             response = self._internal_handle()
             self._write_response(response)
+        except EOFError:
+            pass
+        except BrokenPipeError:
+            pass
         except Exception as e:
             self._handle_error(e)
 
@@ -120,6 +128,8 @@ class TCPServiceHandler(GenericBaseHandler, socketserver.BaseRequestHandler):
 
     def _payload_len(self):
         response = self.request.recv(4)
+        if len(response) == 0:
+            return 0
         if len(response) < 4:
             raise EOFError
         return struct.unpack("I", response)[0]
@@ -135,6 +145,8 @@ class UDPServiceHandler(GenericBaseHandler, socketserver.DatagramRequestHandler)
 
     def _payload_len(self) -> str:
         response = self.rfile.read(4)
+        if len(response) == 0:
+            return 0
         if len(response) < 4:
             raise EOFError
         return struct.unpack("I", response)[0]
