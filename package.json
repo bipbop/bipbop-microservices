@@ -1,6 +1,6 @@
 {
   "name": "bipbop-microservices",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Utilização dos serviços da BIPBOP em JS",
   "main": "dist/index.js",
   "scripts": {
@@ -27,7 +27,7 @@
   "homepage": "https://github.com/bipbop/bipbop-microservices#readme",
   "dependencies": {
     "crc": "^3.8.0",
-    "entidades-partes": "^0.1.1",
+    "@bipbop/entidades-partes": "^0.1.3",
     "jsonschema": "^1.2.6",
     "jspack": "0.0.4",
     "metaphone-ptbr": "^1.0.14"

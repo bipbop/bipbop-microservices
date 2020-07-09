@@ -1,5 +1,5 @@
 const metaphone = require('metaphone-ptbr');
-const { distance } = require('entidades-partes');
+const { distance } = require('@bipbop/entidades-partes');
 
 module.exports = {
     entidades: {
