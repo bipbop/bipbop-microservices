@@ -41,9 +41,9 @@ class Client
      */
     public static function getInstance(?string $hostname = null, ?int $port = null, ?string $proto = null): self
     {
-        $key = sprintf("%s:%d", $hostname, $port);
+        $key = sprintf("%s://%s:%d", $proto ?? 'udp', $hostname, $port);
         if (!isset(static::$instances[$key])) {
-            static::$instances[$key] = new self($hostname, $port);
+            static::$instances[$key] = new self($hostname, $port, $proto);
         }
         return static::$instances[$key];
     }
