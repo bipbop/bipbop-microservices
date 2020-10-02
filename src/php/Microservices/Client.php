@@ -2,6 +2,8 @@
 
 namespace BIPBOP\Microservices;
 
+use ExceptionDatabase;
+
 /**
  * Classe do Microserviço
  */
@@ -39,6 +41,7 @@ class Client
      */
     public static function getInstance(?string $hostname = null, ?int $port = null, ?string $proto = null): self
     {
+        $key = sprintf("%s:%d", $hostname, $port);
         if (!isset(static::$instances[$key])) {
             static::$instances[$key] = new self($hostname, $port);
         }
@@ -60,7 +63,7 @@ class Client
         $this->proto = $proto ?: (getenv('BIPBOP_MS_PROTO') ?? 'udp');
         $this->hostname = $hostname ?: (getenv('BIPBOP_MS_HOST') ?? 'localhost');
         $this->port = $port ?: ((int)getenv('BIPBOP_MS_PORT') ?? 3000);
-        $this->timeout = $timeout ?: ['sec' => 0, 'usec' => ((int)getenv('BIPBOP_MS_TIMEOUT') ?? 3000) ];
+        $this->timeout = $timeout ?: ['sec' => 0, 'usec' => ((int)getenv('BIPBOP_MS_TIMEOUT') ?? 3000)];
     }
 
     protected function socketError(&$socketErrorCode = null)
@@ -87,7 +90,7 @@ class Client
         }
 
         switch ($socketError) {
-            /* async */
+                /* async */
             case 'SOCKET_EWOULDBLOCK':
             case 'SOCKET_EAGAIN':
             case 'SOCKET_EALREADY':
@@ -103,7 +106,8 @@ class Client
         return $v;
     }
 
-    protected function socketReadExpect($maxSize, $minimum) {
+    protected function socketReadExpect($maxSize, $minimum)
+    {
         $content = '';
         $timeout = $this->timeoutAt();
         while (strlen($content) < $minimum) {
@@ -143,14 +147,21 @@ class Client
      * @param mixed $payload Dados
      * @return mixed Retorno do Serviço
      */
-    public function call(string $service, $payload = null)
+    public function call(string $service, $payload = null, int $tries = 1)
     {
-        try {
-            return $this->_call($service, $payload);
-        } catch (Exception $e) {
-            $this->disconnect();
-            throw $e;
+        $e = new Exception('no available retry', Exception::CODE_NO_RETRY);
+        for ($i = 0; $i < $tries; $i++) {
+            try {
+                return $this->_call($service, $payload);
+            } catch (Exception $e) {
+                $this->disconnect();
+                if ($e->getCode() === Exception::CODE_SERVICE) {
+                    /** exceção de serviço deve ser lançada */
+                    throw $e;
+                }
+            }
         }
+        throw $e;
     }
 
     public function _call(string $service, $payload = null)
@@ -158,12 +169,12 @@ class Client
         $this->connect();
 
         $encode = json_encode(['service' => $service, 'payload' => $payload]);
-        
+
         $this->throwOnError(@socket_write($this->socket, pack('I', strlen($encode)) . $encode));
         $data = $this->socketReadExpect(65535, 4);
         $bytesUnpack = @unpack("I", substr($data, 0, 4));
         $bytes = array_pop($bytesUnpack);
-        if (!$bytes) throw new Exception('empty microservice response');
+        if (!$bytes) throw new Exception('empty microservice response', Exception::CODE_EMPTY_RESPONSE);
         $bytesPending = $bytes - (strlen($data) - 4);
 
         if ($this->proto !== self::PROTO_UDP) {
@@ -176,7 +187,7 @@ class Client
                     break;
                 }
                 if ($timeout < microtime(true)) {
-                    throw new Exception('timeout occurred');
+                    throw new Exception('timeout occurred', Exception::CODE_TIMEOUT);
                 }
             }
         }
@@ -184,19 +195,19 @@ class Client
         $content = substr($data, 4);
         $contentSize = strlen($content);
         if ($contentSize !== $bytes) {
-            throw new Exception(sprintf("Expecting a different amount of bytes, expected %d, received %d", $bytes, $contentSize));
+            throw new Exception(sprintf("Expecting a different amount of bytes, expected %d, received %d", $bytes, $contentSize), Exception::CODE_PAYLOAD);
         }
 
         $decode = json_decode($content, true);
         if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new Exception(json_last_error_msg());
+            throw new Exception(json_last_error_msg(), Exception::CODE_JSON);
         }
 
         if (isset($decode['errors'])) {
             $message = implode("\n", array_map(function ($errors) {
                 return $errors['description'];
             }, $decode['errors']));
-            throw new Exception($message);
+            throw new Exception($message, Exception::CODE_SERVICE);
         }
 
         return $decode['payload'];
@@ -225,7 +236,7 @@ class Client
             try {
                 $this->throwOnError();
                 if ($timeout < microtime(true)) {
-                    throw new Exception('timeout occurred');
+                    throw new Exception('timeout occurred', Exception::CODE_TIMEOUT);
                 }
             } catch (\Exception $e) {
                 $this->disconnect();
