@@ -1,6 +1,5 @@
 {
   "name": "bipbop-microservices",
-  "version": "1.0.8",
   "description": "Utilização dos serviços da BIPBOP em JS",
   "main": "dist/index.js",
   "scripts": {
